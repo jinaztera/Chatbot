@@ -1,6 +1,7 @@
 import numpy as np
 import streamlit as st
 import openai
+import time
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 # from langchain.chat_models import ChatOpenAI
@@ -47,7 +48,7 @@ if "messages" not in st.session_state:
 # 채팅창에 session_state 나타내기
 
 
-prompt = st.chat_input("질문을 하세요.")
+prompt = st.chat_input("질문?")
 
 valid = False
 
@@ -60,6 +61,7 @@ if st.session_state.level == 1 and st.session_state.count == 0:
 #     st.session_state.count = 1
 
 def quiz(level):
+    time.sleep(2)
     st.session_state.level = level
     st.session_state.count = 0
     st.session_state.messages.append({"role": "assistant", "content":"level " + str(st.session_state.level) + " 문제입니다"})
@@ -73,7 +75,6 @@ if prompt :
         st.session_state.messages.append({"role": "assistant", "content":"정답입니다"})
         st.session_state.level += 1
         st.session_state.count = 0
-
         quiz(2)
 
     # 2번 문제
@@ -81,34 +82,40 @@ if prompt :
         st.session_state.messages.append({"role": "assistant", "content":"정답입니다"})
         st.session_state.level += 1
         st.session_state.count = 0
-
         quiz(3)
+
+    if prompt == "1234" and st.session_state.level == 3:            
+        st.session_state.messages.append({"role": "assistant", "content":"정답입니다"})
+        st.session_state.level += 1
+        st.session_state.count = 0
+        quiz(4)
+    
 
     # else :         
     #     st.session_state.messages.append({"role": "assistant", "content":"틀렸습니다"})
 
         
 # valid가 True가 될 시 인공지능과 대화    
-if prompt and valid:
-    with st.chat_message("user"):
-        st.markdown(prompt)
-    st.session_state.messages.append({"role": "user", "content":prompt})
+# if prompt and valid:
+#     with st.chat_message("user"):
+#         st.markdown(prompt)
+#     st.session_state.messages.append({"role": "user", "content":prompt})
 
-    with st.chat_message("assistant"):
-        message_placeholder = st.empty()
-        full_response = ""
-        for response in openai.ChatCompletion.create(
-            model=st.session_state["openai_model"],
-            messages=[
-                {"role": m["role"], "content": m["content"]}
-                for m in st.session_state.messages
-            ],
-            stream=True,
-        ):
-            full_response += response.choices[0].delta.get("content", "")
-            message_placeholder.markdown(full_response)
-        message_placeholder.markdown(full_response)
-    st.session_state.messages.append({"role": "assistant", "content":full_response})
+#     with st.chat_message("assistant"):
+#         message_placeholder = st.empty()
+#         full_response = ""
+#         for response in openai.ChatCompletion.create(
+#             model=st.session_state["openai_model"],
+#             messages=[
+#                 {"role": m["role"], "content": m["content"]}
+#                 for m in st.session_state.messages
+#             ],
+#             stream=True,
+#         ):
+#             full_response += response.choices[0].delta.get("content", "")
+#             message_placeholder.markdown(full_response)
+#         message_placeholder.markdown(full_response)
+#     st.session_state.messages.append({"role": "assistant", "content":full_response})
 
 
 st.header("Stage  :  " + str(st.session_state.level))
